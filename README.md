@@ -75,3 +75,5 @@ docker compose down -v --remove-orphans
 - Separate business logic from the Nakama implementation details
 - Create layers (such as Controller/Service/Repository) or a hexagonal architecture where the business logic is a core
   whereas DB and Nakama are outgoing and incoming ports 
+- Externalize configuration
+- Store and request all credentials from a secret vault 
