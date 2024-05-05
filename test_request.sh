@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 callScore() {
   curl "127.0.0.1:7350/v2/rpc/ProcessPayloadRpc" -H "Authorization: Bearer $NAKAMA_USER_TOKEN" --data '"{\"type\": \"score\", \"version\": \"1.0.0\", \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"}"'

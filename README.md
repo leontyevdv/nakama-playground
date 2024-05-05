@@ -27,19 +27,47 @@ lib.
 
 ## How to run
 
+### Run containers
+
+Run the docker-compose command to build and run a container with Nakama that includes a custom RPC function.
+This command will run a PostgreSQL container.
+
 ```bash
 docker-compose up -d --build nakama
 ```
 
+To check if everything works as expected use the following command:
+
 ```bash
-leontyevdv_nakama_backend | {"level":"info","ts":"2024-05-04T14:39:38.826Z","caller":"main.go:204","msg":"Startup done"}
+docker ps
 ```
 
-https://github.com/golang-migrate/migrate
+You should see two containers in the output: nakama-playground-nakama and postgres:12.2-alpine.
+
+Run the following command to check logs:
+
+```bash
+docker logs leontyevdv_nakama_backend
+```
+
+You should see the following line in there:
+
+```bash
+{"level":"info","ts":"2024-05-05T20:01:34.313Z","caller":"main.go:204","msg":"Startup done"}
+```
+
+### Run a migration
+
+To create DB tables I use a [golang-migrate](https://github.com/golang-migrate/migrate) tool. This is supposed to be a
+separate step in the CD pipeline.
+
+Migration files reside in the ./migrations folder. Run the following command to apply them:
 
 ```bash
 docker run -v ./migrations:/migrations --network host migrate/migrate -path=/migrations/ -database "postgres://postgres:localdb@localhost/nakama?sslmode=disable" up
 ```
+
+You should see something like this in Terminal:
 
 ```bash
 20240504095304/u create_core_table (6.7065ms)
@@ -48,8 +76,8 @@ docker run -v ./migrations:/migrations --network host migrate/migrate -path=/mig
 
 ## How to test
 
-The test_request.sh bash script authenticates the user and calls the RPC function. Use one of the following commands to
-test different possible scenarios.
+The test_request.sh bash script (resides in the project folder) authenticates the user and calls the RPC function. Use
+one of the following commands to test different possible scenarios.
 
 ```bash
 ./test_request.sh callScore
@@ -69,11 +97,9 @@ docker compose down -v --remove-orphans
 
 ## Possible improvements and production considerations
 
-- Down for rollback
-- Externalize configuration
-- Use https://github.com/ascii8/nktest
-- Separate business logic from the Nakama implementation details
-- Create layers (such as Controller/Service/Repository) or a hexagonal architecture where the business logic is a core
-  whereas DB and Nakama are outgoing and incoming ports 
-- Externalize configuration
-- Store and request all credentials from a secret vault 
+- When creating migrations, there should be rollback migrations defined.
+- Externalize configuration. All the credentials and configurations should be provided to the app through the
+  environment variables or a config-server. Store all the credentials from a secret vault.
+- Separate business logic from the Nakama implementation details. Create layers (such as Controller/Service/Repository)
+  or a hexagonal architecture where the business logic is a core whereas DB and Nakama are outgoing and incoming ports
+- Use https://github.com/ascii8/nktest to write Nakama-specific tests
